@@ -18,23 +18,45 @@
   const FILE = "video.mp4";
   const NAME = "video.mp4";
 
-  // 1. Start the download
-  const a = document.createElement("a");
-  a.href = FILE;
-  a.download = NAME;
-  document.body.appendChild(a);
-  a.click();
+  function save(href) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = NAME;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
 
-  // 2. Close the tab shortly after (gives the browser time to start the download)
-  setTimeout(() => {
-    window.close();
-    // Browsers only allow close() on tabs opened by a script. If it was blocked,
-    // blank the page instead and leave a manual fallback link.
+  function finish() {
+    // Try to close the tab (browsers only allow this for script-opened tabs)
     setTimeout(() => {
-      document.getElementById("msg").innerHTML =
-        'Done. <a href="' + FILE + '" download="' + NAME + '">Download again</a>';
-    }, 300);
-  }, 800);
+      window.close();
+      setTimeout(() => {
+        document.getElementById("msg").innerHTML =
+          'Done. <a href="#" id="again">Download again</a>';
+        document.getElementById("again").onclick = (e) => { e.preventDefault(); start(); };
+      }, 300);
+    }, 800);
+  }
+
+  async function start() {
+    try {
+      // Fetch the file and save it as a blob: this forces a real download
+      // instead of letting the browser open/play the video in the tab.
+      const res = await fetch(FILE);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(new Blob([blob], { type: "application/octet-stream" }));
+      save(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      // Fallback (e.g. opened straight from disk, where fetch is blocked)
+      save(FILE);
+    }
+    finish();
+  }
+
+  start();
 </script>
 </body>
 </html>
