@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Downloading…</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; display: grid; place-items: center; height: 100vh; margin: 0; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<p id="msg">Downloading…</p>
+
+<script>
+  // ← Change these two lines when you swap in the real video
+  const FILE = "video.mp4";
+  const NAME = "video.mp4";
+
+  // 1. Start the download
+  const a = document.createElement("a");
+  a.href = FILE;
+  a.download = NAME;
+  document.body.appendChild(a);
+  a.click();
+
+  // 2. Close the tab shortly after (gives the browser time to start the download)
+  setTimeout(() => {
+    window.close();
+    // Browsers only allow close() on tabs opened by a script. If it was blocked,
+    // blank the page instead and leave a manual fallback link.
+    setTimeout(() => {
+      document.getElementById("msg").innerHTML =
+        'Done. <a href="' + FILE + '" download="' + NAME + '">Download again</a>';
+    }, 300);
+  }, 800);
+</script>
+</body>
+</html>
